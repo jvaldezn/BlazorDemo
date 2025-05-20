@@ -1,0 +1,108 @@
+﻿@page "/users/edit"
+@using BlazorDemo.Repositories
+@using Microsoft.EntityFrameworkCore
+@using BlazorDemo.Models
+@* @inject IDbContextFactory<BlazorDemo.Data.BlazorDemoContext> DbFactory *@
+@inject NavigationManager NavigationManager
+@inject IUserRepository _service
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>User</h2>
+<hr />
+@if (User is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="User" OnValidSubmit="UpdateUser" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="User.Id" value="@User.Id" />
+                <div class="mb-3">
+                    <label for="firstname" class="form-label">FirstName:</label>
+                    <InputText id="firstname" @bind-Value="User.FirstName" class="form-control" />
+                    <ValidationMessage For="() => User.FirstName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="lastname" class="form-label">LastName:</label>
+                    <InputText id="lastname" @bind-Value="User.LastName" class="form-control" />
+                    <ValidationMessage For="() => User.LastName" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="dateofbirth" class="form-label">DateOfBirth:</label>
+                    <InputDate id="dateofbirth" @bind-Value="User.DateOfBirth" class="form-control" />
+                    <ValidationMessage For="() => User.DateOfBirth" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/users">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private User? User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // using var context = DbFactory.CreateDbContext();
+        // User ??= await context.User.FirstOrDefaultAsync(m => m.Id == Id);
+        User ??= await _service.GetById(Id);
+
+        if (User is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateUser()
+    {
+        // using var context = DbFactory.CreateDbContext();
+        // context.Attach(User!).State = EntityState.Modified;
+
+        // try
+        // {
+        //     await context.SaveChangesAsync();
+        // }
+        // catch (DbUpdateConcurrencyException)
+        // {
+        //     if (!UserExists(User!.Id))
+        //     {
+        //         NavigationManager.NavigateTo("notfound");
+        //     }
+        //     else
+        //     {
+        //         throw;
+        //     }
+        // }
+
+        bool isOk = await _service.Update(User!);
+        if(!isOk)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+
+        NavigationManager.NavigateTo("/users");
+    }
+
+    // private bool UserExists(int id)
+    // {
+    //     using var context = DbFactory.CreateDbContext();
+    //     return context.User.Any(e => e.Id == id);
+    // }
+}

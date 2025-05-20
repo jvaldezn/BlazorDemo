@@ -1,0 +1,57 @@
+﻿@page "/users/create"
+@using BlazorDemo.Repositories
+@using Microsoft.EntityFrameworkCore
+@using BlazorDemo.Models
+@* @inject IDbContextFactory<BlazorDemo.Data.BlazorDemoContext> DbFactory *@
+@inject NavigationManager NavigationManager
+@inject IUserRepository _service
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>User</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="User" OnValidSubmit="AddUser" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="firstname" class="form-label">FirstName:</label> 
+                <InputText id="firstname" @bind-Value="User.FirstName" class="form-control" /> 
+                <ValidationMessage For="() => User.FirstName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="lastname" class="form-label">LastName:</label> 
+                <InputText id="lastname" @bind-Value="User.LastName" class="form-control" /> 
+                <ValidationMessage For="() => User.LastName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="dateofbirth" class="form-label">DateOfBirth:</label> 
+                <InputDate id="dateofbirth" @bind-Value="User.DateOfBirth" class="form-control" /> 
+                <ValidationMessage For="() => User.DateOfBirth" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/users">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private User User { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddUser()
+    {
+        // using var context = DbFactory.CreateDbContext();
+        // context.User.Add(User);
+        // await context.SaveChangesAsync();
+        await _service.Create(User);
+        NavigationManager.NavigateTo("/users");
+    }
+}
